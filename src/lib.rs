@@ -12,7 +12,7 @@ impl State {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct FiniteAutomaton {
+pub struct DFA {
     states: HashSet<State>,
     alphabet: HashSet<char>,
     start: State,
@@ -20,15 +20,15 @@ pub struct FiniteAutomaton {
     accepting_states: HashSet<State>,
 }
 
-impl FiniteAutomaton {
+impl DFA {
     fn new(
         states: HashSet<State>,
         alphabet: HashSet<char>,
         start: State,
         transition_function: HashMap<(State, char), State>,
         accepting_states: HashSet<State>,
-    ) -> FiniteAutomaton {
-        FiniteAutomaton {
+    ) -> DFA {
+        DFA {
             states,
             alphabet,
             start,
@@ -50,25 +50,19 @@ mod tests {
     }
 
     #[test]
-    fn test_create_fa() {
+    fn test_create_dfa() {
         let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();
 
         let alphabet: HashSet<_> = ['a', 'b'].iter().cloned().collect();
         let start = State::new(1);
         let accepting_states: HashSet<_> = [State::new(2)].iter().cloned().collect();
 
-        let transition_function: HashMap<_, _> = states
-            .iter()
-            .cloned()
-            .zip(alphabet.iter().cloned())
-            .zip(
-                [State::new(1), State::new(2), State::new(2), State::new(2)]
-                    .iter()
-                    .cloned(),
-            )
-            .collect();
+        let states_domain = states.iter().cloned();
+        let domain = states_domain.zip(alphabet.iter().cloned());
+        let image = [State::new(1), State::new(2), State::new(2), State::new(2)];
+        let transition_function: HashMap<_, _> = domain.zip(image.iter().cloned()).collect();
 
-        let fa = FiniteAutomaton::new(
+        let fa = DFA::new(
             states.clone(),
             alphabet.clone(),
             start,
@@ -78,7 +72,7 @@ mod tests {
 
         assert_eq!(
             fa,
-            FiniteAutomaton {
+            DFA {
                 states,
                 alphabet,
                 start,
