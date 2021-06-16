@@ -135,4 +135,16 @@ mod tests {
         assert_eq!(dfa.recognizes("a"), false);
         assert_eq!(dfa.recognizes("b"), true);
     }
+
+    #[test]
+    fn test_add_transition() {
+        let mut dfa = setup_dfa();
+        dfa.add_transition(State::new(1), 'a', State::new(2));
+
+        assert_eq!(dfa.recognizes("bababa"), true);
+        assert_eq!(dfa.recognizes(""), false);
+        assert_eq!(dfa.recognizes("ababa"), true);
+        assert_eq!(dfa.recognizes("a"), true);
+        assert_eq!(dfa.recognizes("b"), true);
+    }
 }
