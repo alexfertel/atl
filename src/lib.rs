@@ -49,10 +49,8 @@ impl DFA {
     }
 
     fn recognizes(&self, word: &str) -> bool {
-        println!("word: {}", word);
         self.accepting_states
             .contains(word.chars().fold(&self.start, |current_state, symbol| {
-                println!("current_state: {}, symbol: {}", current_state.id, symbol);
                 self.transition_function
                     .get(&(*current_state, symbol))
                     .expect(&format!(
@@ -131,9 +129,10 @@ mod tests {
     #[test]
     fn test_recognizes() {
         let dfa = setup_dfa();
-        println!("tf: {:#?}", dfa.transition_function);
         assert_eq!(dfa.recognizes("bababa"), true);
         assert_eq!(dfa.recognizes(""), false);
         assert_eq!(dfa.recognizes("ababa"), true);
+        assert_eq!(dfa.recognizes("a"), false);
+        assert_eq!(dfa.recognizes("b"), true);
     }
 }
