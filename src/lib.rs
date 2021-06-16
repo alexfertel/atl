@@ -49,8 +49,10 @@ impl DFA {
     }
 
     fn recognizes(&self, word: &str) -> bool {
+        println!("word: {}", word);
         self.accepting_states
             .contains(word.chars().fold(&self.start, |current_state, symbol| {
+                println!("current_state: {}, symbol: {}", current_state.id, symbol);
                 self.transition_function
                     .get(&(*current_state, symbol))
                     .expect(&format!(
@@ -64,15 +66,17 @@ impl DFA {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use itertools::{iproduct, Itertools};
+
     fn setup_dfa() -> DFA {
         let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();
 
-        let alphabet: HashSet<_> = ['a', 'b'].iter().cloned().collect();
+        let alphabet: HashSet<_> = "ab".chars().collect();
         let start = State::new(1);
         let accepting_states: HashSet<_> = [State::new(2)].iter().cloned().collect();
 
         let states_domain = states.iter().cloned();
-        let domain = states_domain.zip(alphabet.iter().cloned());
+        let domain = iproduct!(states_domain, "ab".chars()).sorted_by_key(|x| x.0.id);
         let image = [State::new(1), State::new(2), State::new(2), State::new(2)];
         let transition_function: HashMap<_, _> = domain.zip(image.iter().cloned()).collect();
 
@@ -96,12 +100,12 @@ mod tests {
     fn test_dfa_eq() {
         let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();
 
-        let alphabet: HashSet<_> = ['a', 'b'].iter().cloned().collect();
+        let alphabet: HashSet<_> = "ab".chars().collect();
         let start = State::new(1);
         let accepting_states: HashSet<_> = [State::new(2)].iter().cloned().collect();
 
         let states_domain = states.iter().cloned();
-        let domain = states_domain.zip(alphabet.iter().cloned());
+        let domain = iproduct!(states_domain, "ab".chars()).sorted_by_key(|x| x.0.id);
         let image = [State::new(1), State::new(2), State::new(2), State::new(2)];
         let transition_function: HashMap<_, _> = domain.zip(image.iter().cloned()).collect();
         let dfa = DFA::new(
@@ -127,6 +131,9 @@ mod tests {
     #[test]
     fn test_recognizes() {
         let dfa = setup_dfa();
-        assert!(dfa.recognizes("ababa"));
+        println!("tf: {:#?}", dfa.transition_function);
+        assert_eq!(dfa.recognizes("bababa"), true);
+        assert_eq!(dfa.recognizes(""), false);
+        assert_eq!(dfa.recognizes("ababa"), true);
     }
 }
