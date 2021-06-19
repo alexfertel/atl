@@ -11,7 +11,7 @@ pub struct DFA {
 }
 
 impl DFA {
-    fn new(
+    pub fn new(
         states: HashSet<State>,
         alphabet: HashSet<char>,
         start: State,
@@ -27,12 +27,12 @@ impl DFA {
         }
     }
 
-    fn add_transition(&mut self, source_state: State, symbol: char, destination_state: State) {
+    pub fn add_transition(&mut self, source_state: State, symbol: char, destination_state: State) {
         self.transition_function
             .insert((source_state, symbol), destination_state);
     }
 
-    fn recognizes(&self, word: &str) -> bool {
+    pub fn recognizes(&self, word: &str) -> bool {
         self.accepting_states
             .contains(word.chars().fold(&self.start, |current_state, symbol| {
                 self.transition_function
