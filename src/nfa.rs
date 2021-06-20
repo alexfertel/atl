@@ -3,6 +3,10 @@ use std::collections::{HashMap, HashSet};
 use std::sync::{mpsc, Arc, Mutex};
 use threadpool::ThreadPool;
 
+#[cfg(test)]
+#[path = "./nfa.test.rs"]
+mod tests;
+
 const WORKER_COUNT: usize = 1024;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -110,7 +114,3 @@ impl NFA {
         }
     }
 }
-
-#[cfg(test)]
-#[path = "./nfa.test.rs"]
-mod tests;

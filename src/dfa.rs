@@ -1,6 +1,10 @@
 use crate::state::State;
 use std::collections::{HashMap, HashSet};
 
+#[cfg(test)]
+#[path = "./dfa.test.rs"]
+mod tests;
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct DFA {
     states: HashSet<State>,
@@ -44,7 +48,3 @@ impl DFA {
             }))
     }
 }
-
-#[cfg(test)]
-#[path = "./dfa.test.rs"]
-mod tests;
