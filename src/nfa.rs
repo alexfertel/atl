@@ -56,13 +56,7 @@ impl NFA {
     ) {
         let mut state = state;
         for ch in word.chars() {
-            println!("Iterating over char {}", ch);
             let next_states = self.step(ch, state);
-            println!(
-                "next_states is {:#?} and len is {}",
-                next_states,
-                next_states.len()
-            );
             if next_states.len() > 1 {
                 let mut next_states = next_states.iter();
                 state = *next_states.next().unwrap();
@@ -72,23 +66,15 @@ impl NFA {
                     let word = word.to_owned();
                     let local_handle = Arc::clone(&pool);
                     pool.lock().unwrap().execute(move || {
-                        println!("Got into a thread");
                         child_automata.recognize_in_parallel(&word[1..], state, tx, local_handle);
                     })
                 }
             } else {
-                println!("Entered else");
                 state = *next_states.iter().next().unwrap();
             }
         }
 
-        match tx.send(self.accepting_states.contains(&state)) {
-            Err(e) => print!("Error {}", e),
-            _ => println!(
-                "Was able to send contains result {}",
-                self.accepting_states.contains(&state)
-            ),
-        }
+        tx.send(self.accepting_states.contains(&state)).unwrap();
     }
 
     pub fn recognizes(&self, word: &str) -> bool {
@@ -150,13 +136,6 @@ mod tests {
             transition_function.clone(),
             accepting_states.clone(),
         )
-    }
-
-    #[test]
-    fn test_create_state() {
-        let state = State::new(1);
-
-        assert_eq!(state, State { id: 1 });
     }
 
     #[test]

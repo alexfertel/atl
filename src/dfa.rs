@@ -72,13 +72,6 @@ mod tests {
     }
 
     #[test]
-    fn test_create_state() {
-        let state = State::new(1);
-
-        assert_eq!(state, State { id: 1 });
-    }
-
-    #[test]
     fn test_dfa_eq() {
         let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();
 
