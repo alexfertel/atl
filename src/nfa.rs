@@ -86,8 +86,7 @@ impl NFA {
         let child_automata = self.clone();
         let word = word.to_owned();
         let thread_handle = Arc::clone(&pool);
-        let pool = pool.lock().unwrap();
-        pool.execute(move || {
+        pool.lock().unwrap().execute(move || {
             child_automata.recognize_in_parallel(
                 &word[..],
                 child_automata.start,
@@ -108,6 +107,8 @@ impl NFA {
 
 #[cfg(test)]
 mod tests {
+    use std::iter::FromIterator;
+
     use super::*;
     use itertools::{iproduct, Itertools};
 
@@ -178,7 +179,94 @@ mod tests {
     }
 
     #[test]
-    fn test_recognizes() {
+    fn test_two_transition_same_symbol() {
+        let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();
+
+        let alphabet: HashSet<_> = "ab".chars().map(Symbol::Identifier).collect();
+        let start = State::new(1);
+        let accepting_states: HashSet<_> = [State::new(2)].iter().cloned().collect();
+
+        let mut transition_function: HashMap<(State, Symbol), HashSet<State>> = HashMap::new();
+
+        transition_function.insert(
+            (State::new(1), Symbol::Identifier('a')),
+            HashSet::from_iter([State::new(1), State::new(2)].iter().cloned()),
+        );
+        transition_function.insert(
+            (State::new(1), Symbol::Identifier('b')),
+            HashSet::from_iter([State::new(2)].iter().cloned()),
+        );
+        transition_function.insert(
+            (State::new(2), Symbol::Identifier('a')),
+            HashSet::from_iter([State::new(2)].iter().cloned()),
+        );
+        transition_function.insert(
+            (State::new(2), Symbol::Identifier('b')),
+            HashSet::from_iter([State::new(2)].iter().cloned()),
+        );
+
+        let nfa = NFA::new(
+            states.clone(),
+            alphabet.clone(),
+            start,
+            transition_function.clone(),
+            accepting_states.clone(),
+        );
+
+        assert_eq!(nfa.recognizes("bababa"), true);
+        assert_eq!(nfa.recognizes(""), false);
+        assert_eq!(nfa.recognizes("ababa"), true);
+        assert_eq!(nfa.recognizes("a"), true);
+        assert_eq!(nfa.recognizes("b"), true);
+    }
+
+    #[test]
+    fn test_epsilon() {
+        let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();
+
+        let alphabet: HashSet<_> = "ab".chars().map(Symbol::Identifier).collect();
+        let start = State::new(1);
+        let accepting_states: HashSet<_> = [State::new(2)].iter().cloned().collect();
+
+        let mut transition_function: HashMap<(State, Symbol), HashSet<State>> = HashMap::new();
+
+        transition_function.insert(
+            (State::new(1), Symbol::Epsilon),
+            HashSet::from_iter([State::new(2)].iter().cloned()),
+        );
+        transition_function.insert(
+            (State::new(1), Symbol::Identifier('a')),
+            HashSet::from_iter([State::new(1)].iter().cloned()),
+        );
+        transition_function.insert(
+            (State::new(1), Symbol::Identifier('b')),
+            HashSet::from_iter([State::new(2)].iter().cloned()),
+        );
+        transition_function.insert(
+            (State::new(2), Symbol::Identifier('a')),
+            HashSet::from_iter([State::new(2)].iter().cloned()),
+        );
+        transition_function.insert(
+            (State::new(2), Symbol::Identifier('b')),
+            HashSet::from_iter([State::new(2)].iter().cloned()),
+        );
+
+        let nfa = NFA::new(
+            states.clone(),
+            alphabet.clone(),
+            start,
+            transition_function.clone(),
+            accepting_states.clone(),
+        );
+
+        assert_eq!(nfa.recognizes("bababa"), true);
+        assert_eq!(nfa.recognizes(""), false);
+        assert_eq!(nfa.recognizes("ababa"), true);
+        assert_eq!(nfa.recognizes("a"), true);
+        assert_eq!(nfa.recognizes("b"), true);
+    }
+    #[test]
+    fn test_recognizes_as_dfa() {
         let nfa = setup_nfa();
 
         assert_eq!(nfa.recognizes("bababa"), true);
@@ -189,7 +277,7 @@ mod tests {
     }
 
     #[test]
-    fn test_add_transition() {
+    fn test_add_transition_as_dfa() {
         let mut nfa = setup_nfa();
         let mut set = HashSet::new();
         set.insert(State::new(2));
