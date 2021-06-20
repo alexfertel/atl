@@ -10,13 +10,5 @@ impl State {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_create_state() {
-        let state = State::new(1);
-
-        assert_eq!(state, State { id: 1 });
-    }
-}
+#[path = "./state.test.rs"]
+mod tests;
