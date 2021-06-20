@@ -179,7 +179,6 @@ mod tests {
 
     #[test]
     fn test_recognizes() {
-        println!("After setting up the nfa");
         let nfa = setup_nfa();
 
         assert_eq!(nfa.recognizes("bababa"), true);
