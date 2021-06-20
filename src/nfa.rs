@@ -1,7 +1,5 @@
 use crate::{state::State, symbol::Symbol};
-use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
-use std::sync::atomic::AtomicBool;
 use std::sync::{mpsc, Arc, Mutex};
 use threadpool::ThreadPool;
 
@@ -56,24 +54,40 @@ impl NFA {
         tx: mpsc::Sender<bool>,
         pool: Arc<Mutex<ThreadPool>>,
     ) {
+        let mut state = state;
         for ch in word.chars() {
+            println!("Iterating over char {}", ch);
             let next_states = self.step(ch, state);
-            for &state in next_states.iter() {
-                let tx = tx.clone();
-                let child_automata = self.clone();
-                let word = word.to_owned();
-                let pool = Arc::clone(&pool);
-                let local_handle = pool.lock().unwrap().clone();
-                local_handle.execute(move || {
-                    child_automata.recognize_in_parallel(&word, state, tx, pool);
-                })
+            println!(
+                "next_states is {:#?} and len is {}",
+                next_states,
+                next_states.len()
+            );
+            if next_states.len() > 1 {
+                let mut next_states = next_states.iter();
+                state = *next_states.next().unwrap();
+                for &state in next_states {
+                    let tx = tx.clone();
+                    let child_automata = self.clone();
+                    let word = word.to_owned();
+                    let local_handle = Arc::clone(&pool);
+                    pool.lock().unwrap().execute(move || {
+                        println!("Got into a thread");
+                        child_automata.recognize_in_parallel(&word[1..], state, tx, local_handle);
+                    })
+                }
+            } else {
+                println!("Entered else");
+                state = *next_states.iter().next().unwrap();
             }
         }
 
-        if word.is_empty() {
-            tx.send(self.accepting_states.contains(&state)).unwrap();
-        } else {
-            tx.send(false).unwrap();
+        match tx.send(self.accepting_states.contains(&state)) {
+            Err(e) => print!("Error {}", e),
+            _ => println!(
+                "Was able to send contains result {}",
+                self.accepting_states.contains(&state)
+            ),
         }
     }
 
@@ -83,8 +97,26 @@ impl NFA {
 
         let (tx, rx) = mpsc::channel();
 
-        self.recognize_in_parallel(word, self.start, tx, Arc::clone(&pool));
-        rx.iter().any(|did_recognize| did_recognize)
+        let child_automata = self.clone();
+        let word = word.to_owned();
+        let thread_handle = Arc::clone(&pool);
+        let pool = pool.lock().unwrap();
+        pool.execute(move || {
+            child_automata.recognize_in_parallel(
+                &word[..],
+                child_automata.start,
+                tx,
+                thread_handle,
+            );
+        });
+
+        loop {
+            match rx.recv() {
+                Ok(true) => break true,
+                Ok(false) => continue,
+                Err(_) => break false,
+            }
+        }
     }
 }
 
@@ -168,7 +200,9 @@ mod tests {
 
     #[test]
     fn test_recognizes() {
+        println!("After setting up the nfa");
         let nfa = setup_nfa();
+
         assert_eq!(nfa.recognizes("bababa"), true);
         assert_eq!(nfa.recognizes(""), false);
         assert_eq!(nfa.recognizes("ababa"), true);
