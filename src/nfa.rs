@@ -41,10 +41,15 @@ impl NFA {
             .insert((source_state, symbol), destination_states);
     }
 
-    fn step(&self, ch: char, state: State) -> &HashSet<State> {
-        self.transition_function
+    fn step(&self, ch: char, state: State) -> HashSet<State> {
+        let symbol_states = self
+            .transition_function
             .get(&(state, Symbol::Identifier(ch)))
-            .expect(&format!("No transition found for ({:?}, {:?})", state, ch))
+            .expect(&format!("No transition found for ({:?}, {:?})", state, ch));
+        match self.transition_function.get(&(state, Symbol::Epsilon)) {
+            Some(set) => symbol_states.union(set).cloned().collect(),
+            None => symbol_states.to_owned(),
+        }
     }
 
     fn recognize_in_parallel<'a>(
@@ -65,6 +70,7 @@ impl NFA {
                     let child_automata = self.clone();
                     let word = word.to_owned();
                     let local_handle = Arc::clone(&pool);
+
                     pool.lock().unwrap().execute(move || {
                         child_automata.recognize_in_parallel(&word[1..], state, tx, local_handle);
                     })
@@ -221,7 +227,7 @@ mod tests {
     }
 
     #[test]
-    fn test_epsilon() {
+    fn test_epsilon_transitions() {
         let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();
 
         let alphabet: HashSet<_> = "ab".chars().map(Symbol::Identifier).collect();
