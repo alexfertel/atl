@@ -1,5 +1,8 @@
-use super::*;
+use super::State;
+use super::DFA;
 use itertools::{iproduct, Itertools};
+use std::collections::HashMap;
+use std::collections::HashSet;
 
 fn setup_dfa() -> DFA {
     let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();

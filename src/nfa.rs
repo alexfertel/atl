@@ -57,7 +57,7 @@ impl NFA {
         }
     }
 
-    fn recognize_in_parallel<'a>(
+    fn recognize_in_parallel(
         &self,
         word: &str,
         state: State,
