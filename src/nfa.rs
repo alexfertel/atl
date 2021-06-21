@@ -67,21 +67,23 @@ impl NFA {
         let mut state = state;
         for ch in word.chars() {
             let next_states = self.step(ch, state);
-            if next_states.len() > 1 {
+
+            if next_states.len() == 1 {
+                state = *next_states.iter().next().unwrap();
+            } else {
                 let mut next_states = next_states.iter();
                 state = *next_states.next().unwrap();
+
                 for &state in next_states {
                     let tx = tx.clone();
-                    let child_automata = self.clone();
+                    let child_nfa = self.clone();
                     let word = word.to_owned();
-                    let local_handle = Arc::clone(&pool);
+                    let pool_clone = Arc::clone(&pool);
 
                     pool.lock().unwrap().execute(move || {
-                        child_automata.recognize_in_parallel(&word[1..], state, tx, local_handle);
+                        child_nfa.recognize_in_parallel(&word[1..], state, tx, pool_clone);
                     })
                 }
-            } else {
-                state = *next_states.iter().next().unwrap();
             }
         }
 
