@@ -85,10 +85,7 @@ impl NFA {
             }
         }
 
-        match tx.send(self.accepting_states.contains(&state)) {
-            Ok(()) => (),
-            Err(e) => panic!("Error! {}", e),
-        }
+        tx.send(self.accepting_states.contains(&state)).unwrap();
     }
 
     pub fn recognizes(&self, word: &str) -> bool {
@@ -97,16 +94,11 @@ impl NFA {
 
         let (tx, rx) = mpsc::channel();
 
-        let child_automata = self.clone();
+        let root_nfa = self.clone();
         let word = word.to_owned();
-        let thread_handle = Arc::clone(&pool);
+        let pool_clone = Arc::clone(&pool);
         pool.lock().unwrap().execute(move || {
-            child_automata.recognize_in_parallel(
-                &word[..],
-                child_automata.start,
-                tx,
-                thread_handle,
-            );
+            root_nfa.recognize_in_parallel(&word[..], root_nfa.start, tx, pool_clone);
         });
 
         let did_recognize = rx.iter().any(|did_recognize| did_recognize);
