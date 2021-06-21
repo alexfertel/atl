@@ -50,6 +50,7 @@ impl NFA {
             .transition_function
             .get(&(state, Symbol::Identifier(ch)))
             .expect(&format!("No transition found for ({:?}, {:?})", state, ch));
+
         match self.transition_function.get(&(state, Symbol::Epsilon)) {
             Some(set) => symbol_states.union(set).cloned().collect(),
             None => symbol_states.to_owned(),
@@ -84,7 +85,10 @@ impl NFA {
             }
         }
 
-        tx.send(self.accepting_states.contains(&state)).unwrap();
+        match tx.send(self.accepting_states.contains(&state)) {
+            Ok(()) => (),
+            Err(e) => panic!("Error! {}", e),
+        }
     }
 
     pub fn recognizes(&self, word: &str) -> bool {
@@ -105,12 +109,18 @@ impl NFA {
             );
         });
 
-        loop {
+        let did_recognize = loop {
             match rx.recv() {
                 Ok(true) => break true,
                 Ok(false) => continue,
                 Err(_) => break false,
             }
-        }
+        };
+
+        // If we don't join here, `rx would be droped`
+        // and a thread might try to send to a closed channel.
+        pool.lock().unwrap().join();
+
+        did_recognize
     }
 }
