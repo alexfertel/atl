@@ -109,13 +109,7 @@ impl NFA {
             );
         });
 
-        let did_recognize = loop {
-            match rx.recv() {
-                Ok(true) => break true,
-                Ok(false) => continue,
-                Err(_) => break false,
-            }
-        };
+        let did_recognize = rx.iter().any(|did_recognize| did_recognize);
 
         // If we don't join here, `rx would be droped`
         // and a thread might try to send to a closed channel.
