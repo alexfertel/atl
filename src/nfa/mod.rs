@@ -51,7 +51,7 @@ impl Nfa {
 
         match self.transition_function.get(&(state, Symbol::Epsilon)) {
             Some(set) => symbol_states.union(set).cloned().collect(),
-            None => symbol_states.to_owned(),
+            None => symbol_states.clone(),
         }
     }
 
@@ -75,7 +75,7 @@ impl Nfa {
                 for &state in next_states {
                     let tx = tx.clone();
                     let child_nfa = self.clone();
-                    let word = word.to_owned();
+                    let word = word.to_string();
                     let pool_clone = Arc::clone(&pool);
 
                     pool.lock().unwrap().execute(move || {
@@ -95,7 +95,7 @@ impl Nfa {
         let (tx, rx) = mpsc::channel();
 
         let root_nfa = self.clone();
-        let word = word.to_owned();
+        let word = word.to_string();
         let pool_clone = Arc::clone(&pool);
         pool.lock().unwrap().execute(move || {
             root_nfa.recognize_in_parallel(&word[..], root_nfa.start, tx, pool_clone);
