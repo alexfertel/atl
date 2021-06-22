@@ -16,13 +16,13 @@ fn setup_dfa() -> Dfa {
     let image = [State::new(1), State::new(2), State::new(2), State::new(2)];
     let transition_function: HashMap<_, _> = domain.zip(image.iter().cloned()).collect();
 
-    Dfa::new(
+    Dfa {
         states,
         alphabet,
         start,
         transition_function,
         accepting_states,
-    )
+    }
 }
 
 #[test]
@@ -37,13 +37,13 @@ fn test_dfa_eq() {
     let domain = iproduct!(states_domain, "ab".chars()).sorted_by_key(|x| x.0.id);
     let image = [State::new(1), State::new(2), State::new(2), State::new(2)];
     let transition_function: HashMap<_, _> = domain.zip(image.iter().cloned()).collect();
-    let dfa = Dfa::new(
-        states.clone(),
-        alphabet.clone(),
+    let dfa = Dfa {
+        states: states.clone(),
+        alphabet: alphabet.clone(),
         start,
-        transition_function.clone(),
-        accepting_states.clone(),
-    );
+        transition_function: transition_function.clone(),
+        accepting_states: accepting_states.clone(),
+    };
 
     assert_eq!(
         dfa,
