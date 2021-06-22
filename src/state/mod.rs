@@ -1,5 +1,3 @@
-#[cfg(test)]
-#[path = "./state.test.rs"]
 mod tests;
 
 #[derive(PartialEq, Eq, Debug, Hash, Copy, Clone)]

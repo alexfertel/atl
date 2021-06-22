@@ -1,8 +1,6 @@
 use crate::state::State;
 use std::collections::{HashMap, HashSet};
 
-#[cfg(test)]
-#[path = "./dfa.test.rs"]
 mod tests;
 
 #[derive(Debug, PartialEq, Eq)]
