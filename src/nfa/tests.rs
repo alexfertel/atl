@@ -19,13 +19,13 @@ fn setup_nfa() -> Nfa {
         }))
         .collect();
 
-    Nfa::new(
+    Nfa {
         states,
         alphabet,
         start,
         transition_function,
         accepting_states,
-    )
+    }
 }
 
 #[test]
@@ -47,13 +47,13 @@ fn test_nfa_eq() {
         }))
         .collect();
 
-    let nfa = Nfa::new(
-        states.clone(),
-        alphabet.clone(),
+    let nfa = Nfa {
+        states: states.clone(),
+        alphabet: alphabet.clone(),
         start,
-        transition_function.clone(),
-        accepting_states.clone(),
-    );
+        transition_function: transition_function.clone(),
+        accepting_states: accepting_states.clone(),
+    };
 
     assert_eq!(
         nfa,
@@ -94,13 +94,13 @@ fn test_two_transition_same_symbol() {
         [State::new(2)].iter().cloned().collect(),
     );
 
-    let nfa = Nfa::new(
-        states.clone(),
-        alphabet.clone(),
+    let nfa = Nfa {
+        states: states.clone(),
+        alphabet: alphabet.clone(),
         start,
-        transition_function.clone(),
-        accepting_states.clone(),
-    );
+        transition_function: transition_function.clone(),
+        accepting_states: accepting_states.clone(),
+    };
 
     assert_eq!(nfa.recognizes("bababa"), true);
     assert_eq!(nfa.recognizes(""), false);
@@ -140,13 +140,13 @@ fn test_epsilon_transitions() {
         [State::new(2)].iter().cloned().collect(),
     );
 
-    let nfa = Nfa::new(
-        states.clone(),
+    let nfa = Nfa {
+        states: states.clone(),
         alphabet,
         start,
         transition_function,
         accepting_states,
-    );
+    };
 
     assert_eq!(nfa.recognizes("bababa"), true);
     assert_eq!(nfa.recognizes(""), false);

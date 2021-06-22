@@ -9,30 +9,14 @@ pub const WORKER_COUNT: usize = 8;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Nfa {
-    states: HashSet<State>,
-    alphabet: HashSet<Symbol>,
-    start: State,
-    transition_function: HashMap<(State, Symbol), HashSet<State>>,
-    accepting_states: HashSet<State>,
+    pub states: HashSet<State>,
+    pub alphabet: HashSet<Symbol>,
+    pub start: State,
+    pub transition_function: HashMap<(State, Symbol), HashSet<State>>,
+    pub accepting_states: HashSet<State>,
 }
 
 impl Nfa {
-    pub fn new(
-        states: HashSet<State>,
-        alphabet: HashSet<Symbol>,
-        start: State,
-        transition_function: HashMap<(State, Symbol), HashSet<State>>,
-        accepting_states: HashSet<State>,
-    ) -> Nfa {
-        Nfa {
-            states,
-            alphabet,
-            start,
-            transition_function,
-            accepting_states,
-        }
-    }
-
     pub fn add_transition(
         &mut self,
         source_state: State,

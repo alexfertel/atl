@@ -29,13 +29,13 @@ fn setup_nfa() -> Nfa {
         [State::new(2)].iter().cloned().collect(),
     );
 
-    Nfa::new(
+    Nfa {
         states,
         alphabet,
         start,
         transition_function,
         accepting_states,
-    )
+    }
 }
 
 fn main() {
