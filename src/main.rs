@@ -4,29 +4,29 @@ use {
 };
 
 fn setup_nfa() -> Nfa {
-    let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();
+    let states: HashSet<_> = [State(1), State(2)].iter().cloned().collect();
 
     let alphabet: HashSet<_> = "ab".chars().map(Symbol::Identifier).collect();
-    let start = State::new(1);
-    let accepting_states: HashSet<_> = [State::new(2)].iter().cloned().collect();
+    let start = State(1);
+    let accepting_states: HashSet<_> = [State(2)].iter().cloned().collect();
 
     let mut transition_function: HashMap<(State, Symbol), HashSet<State>> = HashMap::new();
 
     transition_function.insert(
-        (State::new(1), Symbol::Identifier('a')),
-        [State::new(1), State::new(2)].iter().cloned().collect(),
+        (State(1), Symbol::Identifier('a')),
+        [State(1), State(2)].iter().cloned().collect(),
     );
     transition_function.insert(
-        (State::new(1), Symbol::Identifier('b')),
-        [State::new(2)].iter().cloned().collect(),
+        (State(1), Symbol::Identifier('b')),
+        [State(2)].iter().cloned().collect(),
     );
     transition_function.insert(
-        (State::new(2), Symbol::Identifier('a')),
-        [State::new(2)].iter().cloned().collect(),
+        (State(2), Symbol::Identifier('a')),
+        [State(2)].iter().cloned().collect(),
     );
     transition_function.insert(
-        (State::new(2), Symbol::Identifier('b')),
-        [State::new(2)].iter().cloned().collect(),
+        (State(2), Symbol::Identifier('b')),
+        [State(2)].iter().cloned().collect(),
     );
 
     Nfa {

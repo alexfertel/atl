@@ -5,15 +5,15 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 fn setup_dfa() -> Dfa {
-    let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();
+    let states: HashSet<_> = [State(1), State(2)].iter().cloned().collect();
 
     let alphabet: HashSet<_> = "ab".chars().collect();
-    let start = State::new(1);
-    let accepting_states: HashSet<_> = [State::new(2)].iter().cloned().collect();
+    let start = State(1);
+    let accepting_states: HashSet<_> = [State(2)].iter().cloned().collect();
 
     let states_domain = states.iter().cloned();
-    let domain = iproduct!(states_domain, "ab".chars()).sorted_by_key(|x| x.0.id);
-    let image = [State::new(1), State::new(2), State::new(2), State::new(2)];
+    let domain = iproduct!(states_domain, "ab".chars()).sorted_by_key(|x| x.0 .0);
+    let image = [State(1), State(2), State(2), State(2)];
     let transition_function: HashMap<_, _> = domain.zip(image.iter().cloned()).collect();
 
     Dfa {
@@ -27,15 +27,15 @@ fn setup_dfa() -> Dfa {
 
 #[test]
 fn test_dfa_eq() {
-    let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();
+    let states: HashSet<_> = [State(1), State(2)].iter().cloned().collect();
 
     let alphabet: HashSet<_> = "ab".chars().collect();
-    let start = State::new(1);
-    let accepting_states: HashSet<_> = [State::new(2)].iter().cloned().collect();
+    let start = State(1);
+    let accepting_states: HashSet<_> = [State(2)].iter().cloned().collect();
 
     let states_domain = states.iter().cloned();
-    let domain = iproduct!(states_domain, "ab".chars()).sorted_by_key(|x| x.0.id);
-    let image = [State::new(1), State::new(2), State::new(2), State::new(2)];
+    let domain = iproduct!(states_domain, "ab".chars()).sorted_by_key(|x| x.0 .0);
+    let image = [State(1), State(2), State(2), State(2)];
     let transition_function: HashMap<_, _> = domain.zip(image.iter().cloned()).collect();
     let dfa = Dfa {
         states: states.clone(),
@@ -70,7 +70,7 @@ fn test_recognizes() {
 #[test]
 fn test_add_transition() {
     let mut dfa = setup_dfa();
-    dfa.add_transition(State::new(1), 'a', State::new(2));
+    dfa.add_transition(State(1), 'a', State(2));
 
     assert_eq!(dfa.recognizes("bababa"), true);
     assert_eq!(dfa.recognizes(""), false);
