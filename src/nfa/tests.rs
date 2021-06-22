@@ -1,7 +1,7 @@
 use super::*;
 use itertools::{iproduct, Itertools};
 
-fn setup_nfa() -> NFA {
+fn setup_nfa() -> Nfa {
     let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();
 
     let alphabet: HashSet<_> = "ab".chars().map(Symbol::Identifier).collect();
@@ -15,16 +15,16 @@ fn setup_nfa() -> NFA {
     let transition_function: HashMap<_, _> = domain
         .zip(image.iter().map(|&st| {
             let set: HashSet<State> = [st].iter().cloned().collect();
-            set.clone()
+            set
         }))
         .collect();
 
-    NFA::new(
-        states.clone(),
-        alphabet.clone(),
+    Nfa::new(
+        states,
+        alphabet,
         start,
-        transition_function.clone(),
-        accepting_states.clone(),
+        transition_function,
+        accepting_states,
     )
 }
 
@@ -43,11 +43,11 @@ fn test_nfa_eq() {
     let transition_function: HashMap<_, _> = domain
         .zip(image.iter().map(|&st| {
             let set: HashSet<State> = [st].iter().cloned().collect();
-            set.clone()
+            set
         }))
         .collect();
 
-    let nfa = NFA::new(
+    let nfa = Nfa::new(
         states.clone(),
         alphabet.clone(),
         start,
@@ -57,7 +57,7 @@ fn test_nfa_eq() {
 
     assert_eq!(
         nfa,
-        NFA {
+        Nfa {
             states,
             alphabet,
             start,
@@ -79,22 +79,22 @@ fn test_two_transition_same_symbol() {
 
     transition_function.insert(
         (State::new(1), Symbol::Identifier('a')),
-        HashSet::from_iter([State::new(1), State::new(2)].iter().cloned()),
+        [State::new(1), State::new(2)].iter().cloned().collect(),
     );
     transition_function.insert(
         (State::new(1), Symbol::Identifier('b')),
-        HashSet::from_iter([State::new(2)].iter().cloned()),
+        [State::new(2)].iter().cloned().collect(),
     );
     transition_function.insert(
         (State::new(2), Symbol::Identifier('a')),
-        HashSet::from_iter([State::new(2)].iter().cloned()),
+        [State::new(2)].iter().cloned().collect(),
     );
     transition_function.insert(
         (State::new(2), Symbol::Identifier('b')),
-        HashSet::from_iter([State::new(2)].iter().cloned()),
+        [State::new(2)].iter().cloned().collect(),
     );
 
-    let nfa = NFA::new(
+    let nfa = Nfa::new(
         states.clone(),
         alphabet.clone(),
         start,
@@ -121,31 +121,31 @@ fn test_epsilon_transitions() {
 
     transition_function.insert(
         (State::new(1), Symbol::Epsilon),
-        HashSet::from_iter([State::new(2)].iter().cloned()),
+        [State::new(2)].iter().cloned().collect(),
     );
     transition_function.insert(
         (State::new(1), Symbol::Identifier('a')),
-        HashSet::from_iter([State::new(1)].iter().cloned()),
+        [State::new(1)].iter().cloned().collect(),
     );
     transition_function.insert(
         (State::new(1), Symbol::Identifier('b')),
-        HashSet::from_iter([State::new(2)].iter().cloned()),
+        [State::new(2)].iter().cloned().collect(),
     );
     transition_function.insert(
         (State::new(2), Symbol::Identifier('a')),
-        HashSet::from_iter([State::new(2)].iter().cloned()),
+        [State::new(2)].iter().cloned().collect(),
     );
     transition_function.insert(
         (State::new(2), Symbol::Identifier('b')),
-        HashSet::from_iter([State::new(2)].iter().cloned()),
+        [State::new(2)].iter().cloned().collect(),
     );
 
-    let nfa = NFA::new(
+    let nfa = Nfa::new(
         states.clone(),
-        alphabet.clone(),
+        alphabet,
         start,
-        transition_function.clone(),
-        accepting_states.clone(),
+        transition_function,
+        accepting_states,
     );
 
     assert_eq!(nfa.recognizes("bababa"), true);
@@ -154,6 +154,7 @@ fn test_epsilon_transitions() {
     assert_eq!(nfa.recognizes("a"), true);
     assert_eq!(nfa.recognizes("b"), true);
 }
+
 #[test]
 fn test_recognizes_as_dfa() {
     let nfa = setup_nfa();

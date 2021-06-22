@@ -1,10 +1,10 @@
+use super::Dfa;
 use super::State;
-use super::DFA;
 use itertools::{iproduct, Itertools};
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-fn setup_dfa() -> DFA {
+fn setup_dfa() -> Dfa {
     let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();
 
     let alphabet: HashSet<_> = "ab".chars().collect();
@@ -16,12 +16,12 @@ fn setup_dfa() -> DFA {
     let image = [State::new(1), State::new(2), State::new(2), State::new(2)];
     let transition_function: HashMap<_, _> = domain.zip(image.iter().cloned()).collect();
 
-    DFA::new(
-        states.clone(),
-        alphabet.clone(),
+    Dfa::new(
+        states,
+        alphabet,
         start,
-        transition_function.clone(),
-        accepting_states.clone(),
+        transition_function,
+        accepting_states,
     )
 }
 
@@ -37,7 +37,7 @@ fn test_dfa_eq() {
     let domain = iproduct!(states_domain, "ab".chars()).sorted_by_key(|x| x.0.id);
     let image = [State::new(1), State::new(2), State::new(2), State::new(2)];
     let transition_function: HashMap<_, _> = domain.zip(image.iter().cloned()).collect();
-    let dfa = DFA::new(
+    let dfa = Dfa::new(
         states.clone(),
         alphabet.clone(),
         start,
@@ -47,7 +47,7 @@ fn test_dfa_eq() {
 
     assert_eq!(
         dfa,
-        DFA {
+        Dfa {
             states,
             alphabet,
             start,

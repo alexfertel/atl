@@ -1,10 +1,10 @@
 use crate::state::State;
 use std::collections::{HashMap, HashSet};
 
-mod tests;
+pub mod tests;
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct DFA {
+pub struct Dfa {
     states: HashSet<State>,
     alphabet: HashSet<char>,
     start: State,
@@ -12,15 +12,15 @@ pub struct DFA {
     accepting_states: HashSet<State>,
 }
 
-impl DFA {
+impl Dfa {
     pub fn new(
         states: HashSet<State>,
         alphabet: HashSet<char>,
         start: State,
         transition_function: HashMap<(State, char), State>,
         accepting_states: HashSet<State>,
-    ) -> DFA {
-        DFA {
+    ) -> Dfa {
+        Dfa {
             states,
             alphabet,
             start,
@@ -39,10 +39,12 @@ impl DFA {
             .contains(word.chars().fold(&self.start, |current_state, symbol| {
                 self.transition_function
                     .get(&(*current_state, symbol))
-                    .expect(&format!(
-                        "No transition found for ({:?}, {:?})",
-                        *current_state, symbol
-                    ))
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "No transition found for ({:?}, {:?})",
+                            *current_state, symbol
+                        )
+                    })
             }))
     }
 }

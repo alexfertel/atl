@@ -8,7 +8,7 @@ mod tests;
 pub const WORKER_COUNT: usize = 8;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct NFA {
+pub struct Nfa {
     states: HashSet<State>,
     alphabet: HashSet<Symbol>,
     start: State,
@@ -16,15 +16,15 @@ pub struct NFA {
     accepting_states: HashSet<State>,
 }
 
-impl NFA {
+impl Nfa {
     pub fn new(
         states: HashSet<State>,
         alphabet: HashSet<Symbol>,
         start: State,
         transition_function: HashMap<(State, Symbol), HashSet<State>>,
         accepting_states: HashSet<State>,
-    ) -> NFA {
-        NFA {
+    ) -> Nfa {
+        Nfa {
             states,
             alphabet,
             start,
@@ -47,7 +47,7 @@ impl NFA {
         let symbol_states = self
             .transition_function
             .get(&(state, Symbol::Identifier(ch)))
-            .expect(&format!("No transition found for ({:?}, {:?})", state, ch));
+            .unwrap_or_else(|| panic!("No transition found for ({:?}, {:?})", state, ch));
 
         match self.transition_function.get(&(state, Symbol::Epsilon)) {
             Some(set) => symbol_states.union(set).cloned().collect(),

@@ -1,12 +1,9 @@
 use {
-    atl::{nfa::NFA, state::State, symbol::Symbol},
-    std::{
-        collections::{HashMap, HashSet},
-        iter::FromIterator,
-    },
+    atl::{nfa::Nfa, state::State, symbol::Symbol},
+    std::collections::{HashMap, HashSet},
 };
 
-fn setup_nfa() -> NFA {
+fn setup_nfa() -> Nfa {
     let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();
 
     let alphabet: HashSet<_> = "ab".chars().map(Symbol::Identifier).collect();
@@ -17,27 +14,27 @@ fn setup_nfa() -> NFA {
 
     transition_function.insert(
         (State::new(1), Symbol::Identifier('a')),
-        HashSet::from_iter([State::new(1), State::new(2)].iter().cloned()),
+        [State::new(1), State::new(2)].iter().cloned().collect(),
     );
     transition_function.insert(
         (State::new(1), Symbol::Identifier('b')),
-        HashSet::from_iter([State::new(2)].iter().cloned()),
+        [State::new(2)].iter().cloned().collect(),
     );
     transition_function.insert(
         (State::new(2), Symbol::Identifier('a')),
-        HashSet::from_iter([State::new(2)].iter().cloned()),
+        [State::new(2)].iter().cloned().collect(),
     );
     transition_function.insert(
         (State::new(2), Symbol::Identifier('b')),
-        HashSet::from_iter([State::new(2)].iter().cloned()),
+        [State::new(2)].iter().cloned().collect(),
     );
 
-    NFA::new(
-        states.clone(),
-        alphabet.clone(),
+    Nfa::new(
+        states,
+        alphabet,
         start,
-        transition_function.clone(),
-        accepting_states.clone(),
+        transition_function,
+        accepting_states,
     )
 }
 
