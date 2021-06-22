@@ -1,4 +1,4 @@
-mod dfa;
-mod nfa;
-mod state;
-mod symbol;
+pub mod dfa;
+pub mod nfa;
+pub mod state;
+pub mod symbol;

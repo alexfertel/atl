@@ -1,14 +1,10 @@
-mod nfa;
-mod state;
-mod symbol;
-
-use nfa::NFA;
-use state::State;
-use std::{
-    collections::{HashMap, HashSet},
-    iter::FromIterator,
+use {
+    atl::{nfa::NFA, state::State, symbol::Symbol},
+    std::{
+        collections::{HashMap, HashSet},
+        iter::FromIterator,
+    },
 };
-use symbol::Symbol;
 
 fn setup_nfa() -> NFA {
     let states: HashSet<_> = [State::new(1), State::new(2)].iter().cloned().collect();

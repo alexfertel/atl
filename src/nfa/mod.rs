@@ -5,7 +5,7 @@ use threadpool::ThreadPool;
 
 mod tests;
 
-const WORKER_COUNT: usize = 8;
+pub const WORKER_COUNT: usize = 8;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct NFA {
