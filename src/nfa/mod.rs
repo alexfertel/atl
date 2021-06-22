@@ -58,11 +58,10 @@ impl Nfa {
     fn recognize_in_parallel(
         &self,
         word: &str,
-        state: State,
+        mut state: State,
         tx: mpsc::Sender<bool>,
         pool: Arc<Mutex<ThreadPool>>,
     ) {
-        let mut state = state;
         for ch in word.chars() {
             let next_states = self.step(ch, state);
 
