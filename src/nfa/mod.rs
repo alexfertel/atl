@@ -1,6 +1,7 @@
 use crate::{state::State, symbol::Symbol};
 use std::collections::{HashMap, HashSet};
-use std::sync::{mpsc, Arc, Mutex};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 use threadpool::ThreadPool;
 
 mod tests;
@@ -43,53 +44,70 @@ impl Nfa {
         &self,
         word: &str,
         mut state: State,
-        tx: mpsc::Sender<bool>,
+        recognized: Arc<AtomicBool>,
         pool: Arc<Mutex<ThreadPool>>,
     ) {
+        println!("Recognize in parallel enter");
         for ch in word.chars() {
+            println!("Char {:#?}", ch);
+            if recognized.load(Ordering::SeqCst) {
+                println!("Recognize was true, exiting from state {:#?}", state);
+                return;
+            }
+
             let next_states = self.step(ch, state);
 
             if next_states.len() == 1 {
+                println!("Just one state");
                 state = *next_states.iter().next().unwrap();
             } else {
+                println!("More than one state: {:#?}", next_states);
                 let mut next_states = next_states.iter();
                 state = *next_states.next().unwrap();
 
                 for &state in next_states {
-                    let tx = tx.clone();
                     let child_nfa = self.clone();
                     let word = word.to_string();
+                    let recognized_clone = Arc::clone(&recognized);
                     let pool_clone = Arc::clone(&pool);
 
+                    println!("Before locking inside rip");
                     pool.lock().unwrap().execute(move || {
-                        child_nfa.recognize_in_parallel(&word[1..], state, tx, pool_clone);
+                        child_nfa.recognize_in_parallel(
+                            &word[1..],
+                            state,
+                            recognized_clone,
+                            pool_clone,
+                        )
                     })
                 }
             }
         }
 
-        tx.send(self.accepting_states.contains(&state)).unwrap();
+        if self.accepting_states.contains(&state) {
+            println!("Accepted!");
+            recognized.store(true, Ordering::SeqCst);
+        }
+        println!("Exiting!");
     }
 
     pub fn recognizes(&self, word: &str) -> bool {
+        println!("Entered recognizes");
         let pool = threadpool::ThreadPool::new(WORKER_COUNT);
         let pool = Arc::new(Mutex::new(pool));
 
-        let (tx, rx) = mpsc::channel();
+        let recognized = Arc::new(AtomicBool::new(false));
 
         let root_nfa = self.clone();
         let word = word.to_string();
+        let recognized_clone = Arc::clone(&recognized);
         let pool_clone = Arc::clone(&pool);
         pool.lock().unwrap().execute(move || {
-            root_nfa.recognize_in_parallel(&word[..], root_nfa.start, tx, pool_clone);
+            root_nfa.recognize_in_parallel(&word[..], root_nfa.start, recognized_clone, pool_clone);
         });
 
-        let did_recognize = rx.iter().any(|did_recognize| did_recognize);
-
-        // If we don't join here, `rx` would be droped
-        // and a thread might try to send to a closed channel.
         pool.lock().unwrap().join();
 
-        did_recognize
+        recognized.load(Ordering::SeqCst)
     }
 }

@@ -40,6 +40,5 @@ fn setup_nfa() -> Nfa {
 
 fn main() {
     let nfa = setup_nfa();
-    let result = nfa.recognizes("a");
-    print!("Did recognize? {}", result);
+    println!("Result: {}", nfa.recognizes("a"));
 }
