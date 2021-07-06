@@ -1,7 +1,7 @@
 use crate::{state::State, symbol::Symbol};
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use threadpool::ThreadPool;
 
 mod tests;
@@ -45,23 +45,18 @@ impl Nfa {
         word: &str,
         mut state: State,
         recognized: Arc<AtomicBool>,
-        pool: Arc<Mutex<ThreadPool>>,
+        pool: ThreadPool,
     ) {
-        println!("Recognize in parallel enter");
         for ch in word.chars() {
-            println!("Char {:#?}", ch);
             if recognized.load(Ordering::SeqCst) {
-                println!("Recognize was true, exiting from state {:#?}", state);
                 return;
             }
 
             let next_states = self.step(ch, state);
 
             if next_states.len() == 1 {
-                println!("Just one state");
                 state = *next_states.iter().next().unwrap();
             } else {
-                println!("More than one state: {:#?}", next_states);
                 let mut next_states = next_states.iter();
                 state = *next_states.next().unwrap();
 
@@ -69,44 +64,39 @@ impl Nfa {
                     let child_nfa = self.clone();
                     let word = word.to_string();
                     let recognized_clone = Arc::clone(&recognized);
-                    let pool_clone = Arc::clone(&pool);
+                    let pool_clone = pool.clone();
 
-                    println!("Before locking inside rip");
-                    pool.lock().unwrap().execute(move || {
+                    pool.execute(move || {
                         child_nfa.recognize_in_parallel(
                             &word[1..],
                             state,
                             recognized_clone,
                             pool_clone,
                         )
-                    })
+                    });
                 }
             }
         }
 
         if self.accepting_states.contains(&state) {
-            println!("Accepted!");
             recognized.store(true, Ordering::SeqCst);
         }
-        println!("Exiting!");
     }
 
     pub fn recognizes(&self, word: &str) -> bool {
-        println!("Entered recognizes");
-        let pool = threadpool::ThreadPool::new(WORKER_COUNT);
-        let pool = Arc::new(Mutex::new(pool));
+        let pool = ThreadPool::new(WORKER_COUNT);
 
         let recognized = Arc::new(AtomicBool::new(false));
 
         let root_nfa = self.clone();
         let word = word.to_string();
         let recognized_clone = Arc::clone(&recognized);
-        let pool_clone = Arc::clone(&pool);
-        pool.lock().unwrap().execute(move || {
+        let pool_clone = pool.clone();
+        pool.execute(move || {
             root_nfa.recognize_in_parallel(&word[..], root_nfa.start, recognized_clone, pool_clone);
         });
 
-        pool.lock().unwrap().join();
+        pool.join();
 
         recognized.load(Ordering::SeqCst)
     }

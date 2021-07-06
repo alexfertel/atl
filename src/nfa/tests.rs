@@ -168,7 +168,6 @@ fn test_recognizes_as_dfa() {
 
 #[test]
 fn test_add_transition_as_dfa() {
-    println!("Sup");
     let mut nfa = setup_nfa();
     let mut set = HashSet::new();
     set.insert(State(2));
@@ -177,7 +176,6 @@ fn test_add_transition_as_dfa() {
     assert_eq!(nfa.recognizes("bababa"), true);
     assert_eq!(nfa.recognizes(""), false);
     assert_eq!(nfa.recognizes("ababa"), true);
-    println!("ababa");
     assert_eq!(nfa.recognizes("a"), true);
     assert_eq!(nfa.recognizes("b"), true);
 }
